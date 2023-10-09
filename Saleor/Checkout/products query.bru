@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: https://master.staging.saleor.cloud/graphql/
+  url: {{appUrl}}
   body: graphql
   auth: none
 }
@@ -50,9 +50,19 @@ body:graphql:vars {
     "where": {
       "stocks": {
         "quantity": {
-          "gte": 10
+          "gte": 100
         }
       }
     }
   }
+}
+
+tests {
+  let content = res.getBody();
+  bru.setVar("variantID", content.data.products.edges[0].node.variants[0].id);
+  
+  // function onResponse(res) {
+  // let content = res.getBody();
+  // let variantID2 = bru.setEnvVar("variantID2", content.data.products.edges[1].node.variants[0].id);
+  // }
 }
