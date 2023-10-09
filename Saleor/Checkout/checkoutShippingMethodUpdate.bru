@@ -1,7 +1,7 @@
 meta {
-  name: checkoutCreate
+  name: checkoutShippingMethodUpdate
   type: graphql
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -11,16 +11,20 @@ post {
 }
 
 body:graphql {
-  mutation CreateCheckout($checkoutInput: CheckoutCreateInput!) {
-    checkoutCreate(input: $checkoutInput) {
-      errors {
-        field
-        message
-        code
-      }
+  mutation UpdateCheckoutShippingMethod($checkoutId: ID!, $shippingMethodId: ID!) {
+    checkoutShippingMethodUpdate(
+        id: $checkoutId, 
+        shippingMethodId: $shippingMethodId) 
+        {
       checkout {
         ...Checkout
+        
       }
+      errors: checkoutErrors {
+        ...CheckoutError
+        
+      }
+      
     }
   }
   
@@ -28,15 +32,14 @@ body:graphql {
     gross {
       amount
       currency
+      
     }
     net {
       amount
       currency
+      
     }
-    tax {
-      amount
-      currency
-    }
+    
   }
   
   fragment ProductVariant on ProductVariant {
@@ -48,16 +51,49 @@ body:graphql {
       onSale
       priceUndiscounted {
         ...Price
+        
       }
       price {
         ...Price
+        
       }
+      
+    }
+    attributes {
+      attribute {
+        id
+        name
+        
+      }
+      values {
+        id
+        name
+        value: name
+        
+      }
+      
     }
     product {
       id
       name
       slug
+      thumbnail {
+        url
+        alt
+        
+      }
+      thumbnail2x: thumbnail(size: 510) {
+        url
+        
+      }
+      productType {
+        id
+        isShippingRequired
+        
+      }
+      
     }
+    
   }
   
   fragment CheckoutLine on CheckoutLine {
@@ -65,20 +101,13 @@ body:graphql {
     quantity
     totalPrice {
       ...Price
-    }
-    unitPrice{
-      ...Price
-    }
-    undiscountedTotalPrice {
-      amount
-    }
-    undiscountedUnitPrice {
-      amount
-      currency
+      
     }
     variant {
       ...ProductVariant
+      
     }
+    
   }
   
   fragment Address on Address {
@@ -93,11 +122,13 @@ body:graphql {
     country {
       code
       country
+      
     }
     countryArea
     phone
     isDefaultBillingAddress
     isDefaultShippingAddress
+    
   }
   
   fragment ShippingMethod on ShippingMethod {
@@ -106,7 +137,9 @@ body:graphql {
     price {
       currency
       amount
+      
     }
+    
   }
   
   fragment PaymentGateway on PaymentGateway {
@@ -115,8 +148,10 @@ body:graphql {
     config {
       field
       value
+      
     }
     currencies
+    
   }
   
   fragment Checkout on Checkout {
@@ -124,90 +159,76 @@ body:graphql {
     id
     totalPrice {
       ...Price
+      
     }
     subtotalPrice {
       ...Price
+      
     }
     billingAddress {
       ...Address
+      
     }
     shippingAddress {
       ...Address
+      
     }
     email
     availableShippingMethods {
       ...ShippingMethod
+      
     }
     shippingMethod {
       ...ShippingMethod
+      
     }
     shippingPrice {
       ...Price
+      
     }
     lines {
       ...CheckoutLine
+      
     }
     isShippingRequired
     discount {
       currency
       amount
+      
     }
     discountName
     translatedDiscountName
     voucherCode
     availablePaymentGateways {
       ...PaymentGateway
+      
     }
+    
   }
+  
+  fragment CheckoutError on CheckoutError {
+    code
+    field
+    message
+    
+  }
+  
 }
 
 body:graphql:vars {
   {
-     "checkoutInput":{
-        "channel":"default-channel",
-        "email":"customer@exampl.eom",
-        "lines":[
-            {
-              "quantity":1,
-              "variantId":"{{variantID}}"
-           }
-  
-        ],
-        "shippingAddress":{
-           "city":"New York",
-           "country":"US",
-           "countryArea":"NY",
-           "firstName":"John",
-           "lastName":"Smith",
-           "phone":"+12125094995",
-           "postalCode":"10001",
-           "streetAddress1":"8559 Lakes Avenue"
-        },
-        "billingAddress":{
-           "city":"New York",
-           "country":"US",
-           "countryArea":"NY",
-           "firstName":"John",
-           "lastName":"Smith",
-           "phone":"+12125094995",
-           "postalCode":"10001",
-           "streetAddress1":"8559 Lakes Avenue"
-        }
-     }
+    "checkoutId": "{{checkoutId}}",
+    "shippingMethodId": "{{shippingMethod}}"
   }
 }
 
 tests {
-  test("create checkout without errors", function() {
+  test("shippingMethod should not be null", function() {
     const content = res.getBody();
-    expect(content.data.checkoutCreate.errors).to.be.empty;
+    expect(content.data.checkoutShippingMethodUpdate.checkout.shippingMethod.id).to.not.be.a('null');
   });
   
+  
   let content = res.getBody();
-  bru.setVar("checkoutId", content.data.checkoutCreate.checkout.id);
-  
-  bru.setVar("shippingMethod", content.data.checkoutCreate.checkout.availableShippingMethods[0].id);
-  
-  
-  
+  bru.setVar("totalGross", content.data.checkoutShippingMethodUpdate.checkout.totalPrice.gross.amount);
 }

@@ -1,0 +1,38 @@
+meta {
+  name: checkoutPaymentCreate Dummy plugin
+  type: graphql
+  seq: 4
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  mutation createPayment($paymentInput: PaymentInput!, $checkoutId: ID!) {
+    checkoutPaymentCreate(input: $paymentInput, id: $checkoutId) {
+      errors {
+        field
+        message
+      }
+      payment{
+          id
+          gateway
+      }
+    }
+  }
+  
+}
+
+body:graphql:vars {
+  {
+      "checkoutId": "{{checkoutId}}",
+      "paymentInput": {
+          "amount": "{{totalGross}}",
+          "gateway": "mirumee.payments.dummy",
+          "token": "fully_charged"
+      }
+  }
+}
