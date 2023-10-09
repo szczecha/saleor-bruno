@@ -1,0 +1,78 @@
+meta {
+  name: orders query
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:graphql {
+  query Ordes{
+    orders(first:10){
+      totalCount
+      edges{
+        node{
+          id
+          number
+          status
+          created
+          paymentStatus
+          transactions{
+            id
+            pspReference
+            createdBy{
+              __typename
+            }
+            events{
+              amount{
+                amount
+                currency
+              }
+              pspReference
+              externalUrl
+            }
+          }
+          total{
+            gross{
+              amount
+            }
+          }
+          lines{
+            id
+            productName
+            variant{
+              id
+              name
+            }
+            quantity
+            totalPrice{
+              gross{
+                amount
+              }
+            }
+            undiscountedTotalPrice{
+              gross{
+                amount
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+tests {
+  test("get orders without errors", function() {
+    const content = res.getBody();
+    expect(content.errors).to.not.exist;
+  });
+}
