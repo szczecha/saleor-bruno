@@ -1,0 +1,58 @@
+meta {
+  name: products query
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: https://master.staging.saleor.cloud/graphql/
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query Products($channel:String, $first: Int, $where: ProductWhereInput){
+    products(channel: $channel, first:$first, where:$where) 
+    {
+      edges {
+        node {
+          name
+          id
+          isAvailableForPurchase
+          variants {
+            id
+            name
+            quantityAvailable
+            pricing {
+              onSale
+              priceUndiscounted{
+                  net{
+                      amount
+                  }
+              }
+              discount{
+                  net{
+                      amount
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "channel": "default-channel",
+    "first": 10,
+    "where": {
+      "stocks": {
+        "quantity": {
+          "gte": 10
+        }
+      }
+    }
+  }
+}
