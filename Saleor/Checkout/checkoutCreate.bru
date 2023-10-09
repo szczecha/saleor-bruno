@@ -1,0 +1,198 @@
+meta {
+  name: checkoutCreate
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  mutation CreateCheckout($checkoutInput: CheckoutCreateInput!) {
+    checkoutCreate(input: $checkoutInput) {
+      errors {
+        field
+        message
+        code
+      }
+      checkout {
+        ...Checkout
+      }
+    }
+  }
+  
+  fragment Price on TaxedMoney {
+    gross {
+      amount
+      currency
+    }
+    net {
+      amount
+      currency
+    }
+    tax {
+      amount
+      currency
+    }
+  }
+  
+  fragment ProductVariant on ProductVariant {
+    id
+    name
+    sku
+    quantityAvailable
+    pricing {
+      onSale
+      priceUndiscounted {
+        ...Price
+      }
+      price {
+        ...Price
+      }
+    }
+    product {
+      id
+      name
+      slug
+    }
+  }
+  
+  fragment CheckoutLine on CheckoutLine {
+    id
+    quantity
+    totalPrice {
+      ...Price
+    }
+    unitPrice{
+      ...Price
+    }
+    undiscountedTotalPrice {
+      amount
+    }
+    undiscountedUnitPrice {
+      amount
+      currency
+    }
+    variant {
+      ...ProductVariant
+    }
+  }
+  
+  fragment Address on Address {
+    id
+    firstName
+    lastName
+    companyName
+    streetAddress1
+    streetAddress2
+    city
+    postalCode
+    country {
+      code
+      country
+    }
+    countryArea
+    phone
+    isDefaultBillingAddress
+    isDefaultShippingAddress
+  }
+  
+  fragment ShippingMethod on ShippingMethod {
+    id
+    name
+    price {
+      currency
+      amount
+    }
+  }
+  
+  fragment PaymentGateway on PaymentGateway {
+    id
+    name
+    config {
+      field
+      value
+    }
+    currencies
+  }
+  
+  fragment Checkout on Checkout {
+    token
+    id
+    totalPrice {
+      ...Price
+    }
+    subtotalPrice {
+      ...Price
+    }
+    billingAddress {
+      ...Address
+    }
+    shippingAddress {
+      ...Address
+    }
+    email
+    availableShippingMethods {
+      ...ShippingMethod
+    }
+    shippingMethod {
+      ...ShippingMethod
+    }
+    shippingPrice {
+      ...Price
+    }
+    lines {
+      ...CheckoutLine
+    }
+    isShippingRequired
+    discount {
+      currency
+      amount
+    }
+    discountName
+    translatedDiscountName
+    voucherCode
+    availablePaymentGateways {
+      ...PaymentGateway
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+     "checkoutInput":{
+        "channel":"default-channel",
+        "email":"customer@exampl.eom",
+        "lines":[
+            {
+              "quantity":1,
+              "variantId":"{{variantID}}"
+           }
+  
+        ],
+        "shippingAddress":{
+           "city":"New York",
+           "country":"US",
+           "countryArea":"NY",
+           "firstName":"John",
+           "lastName":"Smith",
+           "phone":"+12125094995",
+           "postalCode":"10001",
+           "streetAddress1":"8559 Lakes Avenue"
+        },
+        "billingAddress":{
+           "city":"New York",
+           "country":"US",
+           "countryArea":"NY",
+           "firstName":"John",
+           "lastName":"Smith",
+           "phone":"+12125094995",
+           "postalCode":"10001",
+           "streetAddress1":"8559 Lakes Avenue"
+        }
+     }
+  }
+}
