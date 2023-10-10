@@ -1,0 +1,28 @@
+meta {
+  name: apps query
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:graphql {
+  query Apps{
+    apps(first:10, filter: {type:THIRDPARTY}){
+      edges{
+        node{
+          id
+          name
+        }
+      }
+    }
+  }
+}

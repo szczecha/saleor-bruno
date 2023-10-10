@@ -1,0 +1,51 @@
+meta {
+  name: tokenCreate
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  mutation TokenCreate($email: String!, $password: String!) {
+    tokenCreate(email: $email, password: $password) {
+      csrfToken
+      refreshToken
+      token
+      errors: accountErrors {
+        ...AccountError
+            }
+      user {
+        id
+        email
+            }
+        }
+  }
+  fragment AccountError on AccountError {
+    code
+    field
+    message
+    }
+}
+
+body:graphql:vars {
+  {
+    "email": "{{email}}",
+    "password": "{{password}}"
+  }
+}
+
+tests {
+  test("login success", function() {
+    const content = res.getBody();
+    expect(content.data.tokenCreate.token).to.not.be.a('null');
+  });
+  
+  
+  let content = res.getBody();
+  bru.setVar("token", content.data.tokenCreate.token);
+}

@@ -1,0 +1,64 @@
+meta {
+  name: transactionInitialize
+  type: graphql
+  seq: 5
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{appTokenAuth}}
+}
+
+body:graphql {
+  mutation TransactionInitalize($amount: PositiveDecimal, $checkoutId: ID!, $paymentGateway: PaymentGatewayToInitialize!) {
+    transactionInitialize(
+      amount: $amount
+      id: $checkoutId
+      paymentGateway: $paymentGateway
+     
+    ) {
+      transaction {
+        id
+        actions
+        message
+        pspReference
+      }
+      data
+      errors {
+        field
+        message
+        code
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "checkoutId": "{{checkoutId}}",
+    "amount": "{{totalGross}}",
+    "paymentGateway": {
+      "id": "app.saleor.adyen",
+      "data": {
+        "paymentMethod": {
+          "type": "scheme",
+          "encryptedCardNumber": "test_5555555555554444",
+          "encryptedExpiryMonth": "test_03",
+          "encryptedExpiryYear": "test_2030",
+          "encryptedSecurityCode": "test_737"
+        },
+        "merchantAccount": "SaleorECOM"
+      }
+    }
+  }
+}
+
+tests {
+  let content = res.getBody();
+  bru.setVar("transactionId", content.data.transactionInitialize.transaction.id);
+}

@@ -1,0 +1,85 @@
+meta {
+  name: checkoutComplete
+  type: graphql
+  seq: 7
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  mutation CheckoutComplete($checkoutId: ID!) {
+    checkoutComplete(id: $checkoutId) {
+      errors {
+        message
+        field
+        code
+      }
+      confirmationNeeded
+      confirmationData
+      order {
+        id
+        status
+        paymentStatus
+        user {
+          email
+        }
+        isShippingRequired
+        total {
+          gross {
+            amount
+          }
+        }
+        checkoutId
+        voucher{
+            code
+        }
+        discounts{
+            type
+            value
+            valueType
+            
+        }
+        deliveryMethod {
+          ... on ShippingMethod {
+            id
+          }
+          ... on Warehouse {
+            id
+          }
+        }
+        lines{
+          id
+          unitDiscount{
+            amount
+          }
+          unitDiscountType
+          unitDiscountReason
+          unitDiscountValue
+          undiscountedUnitPrice{
+            net{
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "checkoutId": "{{checkoutId}}"
+  }
+}
+
+tests {
+  test("order created", function() {
+    const content = res.getBody();
+    expect(content.data.checkoutComplete.order.id).to.not.be.a('null');
+  });
+  
+}

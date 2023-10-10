@@ -1,0 +1,48 @@
+meta {
+  name: paymentGatewayInitialize
+  type: graphql
+  seq: 4
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  mutation PaymentGatewayInitialize($amount: PositiveDecimal!, $id: ID!, $paymentGateways: [PaymentGatewayToInitialize!]) {
+    paymentGatewayInitialize(
+      amount: $amount
+      id: $id
+      paymentGateways: $paymentGateways
+    ) {
+      errors {
+        field
+        message
+        code
+      }
+      gatewayConfigs {
+        id
+        data
+        errors {
+          field
+          message
+          code
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "amount": "{{totalGross}}",
+    "id": "{{checkoutId}}",
+    "paymentGateways": [
+      {
+        "id": "app.saleor.adyen"
+      }
+    ]
+  }
+}
