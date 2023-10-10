@@ -1,0 +1,23 @@
+meta {
+  name: appTokenCreate
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:graphql {
+  mutation {
+    appTokenCreate(input: { name: "apiToken", app: "QXBwOjYy" }) {
+      authToken
+    }
+  }
+}

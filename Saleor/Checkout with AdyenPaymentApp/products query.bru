@@ -1,0 +1,68 @@
+meta {
+  name: products query
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query Products($channel:String, $first: Int, $where: ProductWhereInput){
+    products(channel: $channel, first:$first, where:$where) 
+    {
+      edges {
+        node {
+          name
+          id
+          isAvailableForPurchase
+          variants {
+            id
+            name
+            quantityAvailable
+            pricing {
+              onSale
+              priceUndiscounted{
+                  net{
+                      amount
+                  }
+              }
+              discount{
+                  net{
+                      amount
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "channel": "default-channel",
+    "first": 10,
+    "where": {
+      "stocks": {
+        "quantity": {
+          "gte": 300
+        }
+      }
+    }
+  }
+}
+
+tests {
+  let content = res.getBody();
+  bru.setVar("variantID", content.data.products.edges[0].node.variants[0].id);
+  
+  // function onResponse(res) {
+  // let content = res.getBody();
+  // let variantID2 = bru.setEnvVar("variantID2", content.data.products.edges[1].node.variants[0].id);
+  // }
+}

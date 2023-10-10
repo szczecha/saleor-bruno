@@ -1,0 +1,234 @@
+meta {
+  name: checkoutShippingMethodUpdate
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: {{appUrl}}
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  mutation UpdateCheckoutShippingMethod($checkoutId: ID!, $shippingMethodId: ID!) {
+    checkoutShippingMethodUpdate(
+        id: $checkoutId, 
+        shippingMethodId: $shippingMethodId) 
+        {
+      checkout {
+        ...Checkout
+        
+      }
+      errors: checkoutErrors {
+        ...CheckoutError
+        
+      }
+      
+    }
+  }
+  
+  fragment Price on TaxedMoney {
+    gross {
+      amount
+      currency
+      
+    }
+    net {
+      amount
+      currency
+      
+    }
+    
+  }
+  
+  fragment ProductVariant on ProductVariant {
+    id
+    name
+    sku
+    quantityAvailable
+    pricing {
+      onSale
+      priceUndiscounted {
+        ...Price
+        
+      }
+      price {
+        ...Price
+        
+      }
+      
+    }
+    attributes {
+      attribute {
+        id
+        name
+        
+      }
+      values {
+        id
+        name
+        value: name
+        
+      }
+      
+    }
+    product {
+      id
+      name
+      slug
+      thumbnail {
+        url
+        alt
+        
+      }
+      thumbnail2x: thumbnail(size: 510) {
+        url
+        
+      }
+      productType {
+        id
+        isShippingRequired
+        
+      }
+      
+    }
+    
+  }
+  
+  fragment CheckoutLine on CheckoutLine {
+    id
+    quantity
+    totalPrice {
+      ...Price
+      
+    }
+    variant {
+      ...ProductVariant
+      
+    }
+    
+  }
+  
+  fragment Address on Address {
+    id
+    firstName
+    lastName
+    companyName
+    streetAddress1
+    streetAddress2
+    city
+    postalCode
+    country {
+      code
+      country
+      
+    }
+    countryArea
+    phone
+    isDefaultBillingAddress
+    isDefaultShippingAddress
+    
+  }
+  
+  fragment ShippingMethod on ShippingMethod {
+    id
+    name
+    price {
+      currency
+      amount
+      
+    }
+    
+  }
+  
+  fragment PaymentGateway on PaymentGateway {
+    id
+    name
+    config {
+      field
+      value
+      
+    }
+    currencies
+    
+  }
+  
+  fragment Checkout on Checkout {
+    token
+    id
+    totalPrice {
+      ...Price
+      
+    }
+    subtotalPrice {
+      ...Price
+      
+    }
+    billingAddress {
+      ...Address
+      
+    }
+    shippingAddress {
+      ...Address
+      
+    }
+    email
+    availableShippingMethods {
+      ...ShippingMethod
+      
+    }
+    shippingMethod {
+      ...ShippingMethod
+      
+    }
+    shippingPrice {
+      ...Price
+      
+    }
+    lines {
+      ...CheckoutLine
+      
+    }
+    isShippingRequired
+    discount {
+      currency
+      amount
+      
+    }
+    discountName
+    translatedDiscountName
+    voucherCode
+    availablePaymentGateways {
+      ...PaymentGateway
+      
+    }
+    
+  }
+  
+  fragment CheckoutError on CheckoutError {
+    code
+    field
+    message
+    
+  }
+  
+}
+
+body:graphql:vars {
+  {
+    "checkoutId": "{{checkoutId}}",
+    "shippingMethodId": "{{shippingMethod}}"
+  }
+}
+
+tests {
+  test("shippingMethod should not be null", function() {
+    const content = res.getBody();
+    expect(content.data.checkoutShippingMethodUpdate.checkout.shippingMethod.id).to.not.be.a('null');
+  });
+  
+  
+  let content = res.getBody();
+  bru.setVar("totalGross", content.data.checkoutShippingMethodUpdate.checkout.totalPrice.gross.amount);
+}
